@@ -1,7 +1,9 @@
 import React from 'react';
-import { StyleSheet, Text, View, Image } from 'react-native';
+import { StyleSheet, Text, View, Image, ScrollView } from 'react-native';
 import firebase from './firebase';
-import {Container, Item, Label, Input, Button} from 'native-base';
+import {Input} from 'react-native-elements';
+import {Button} from 'native-base';
+import { Row } from 'native-base';
 
 
 
@@ -15,11 +17,45 @@ class App extends React.Component{
     }
   }
 
+  componentDidMount(){
+    firebase.auth().onAuthStateChanged( user => {
+      if(user != null){
+        alert("Login Success");
+      }
+    });
+  }
+
+  signOutUser(){
+    firebase.auth().signOut().then(function() {
+      alert('User Signed Out');
+    }).catch(function(error) {
+     alert(error.toString());
+    });
+  }
+
   signUpUser = (email, password) => {
-   console.log(this.state.email + " - " + this.state.password);
+    try{
+      if(password.length < 6){
+        alert("Your password must be atleast 6 characters long or more");
+        return;
+      }
+      firebase.auth().createUserWithEmailAndPassword(email, password);
+    }catch(error){
+      console.log(error.toString())
+    }
   }
 
   loginUser = (email, password) => {
+
+    try{
+      firebase.auth().signInWithEmailAndPassword(email, password)
+      .then(user => {
+        
+      });
+    }
+    catch(error){
+      console.log(error.toString());
+    }
 
   }
 
@@ -29,37 +65,39 @@ class App extends React.Component{
   render(){
 
     return (
-     <Container style={styles.container}>
-       <Item floatingLabel>
-        <Label>Email</Label>
-        <Input 
-          autoCapitalize="none"
-          autoCorrect={false}
-          onChange={(val) => this.setState({email : val})}
-        />
-       </Item>
-       <Item floatingLabel style={{marginTop: 30}}>
-        <Label>Password</Label>
-        <Input 
-          secureTextEntry={true}
-          autoCapitalize="none"
-          autoCorrect={false}
-          onChange={(val) => this.setState({password : val})}
-        />
-       </Item>
-       <Button 
-        success 
-        rounded 
-        style={{marginTop: 30, flex:1}}
-        onPress={() => this.loginUser(this.state.email, this.state.password)}
-       >
-         <Text style={{color: '#fff'}}>Login</Text>
-       </Button>
-       <Button primary bordered rounded style={{marginTop: 30, flex:1}}
-         onPress={() => this.signUpUser(this.state.email, this.state.password)} >
-         <Text>Sign Up</Text>
-       </Button>
-     </Container>
+         
+        <View style={styles.container}>
+
+          <Input
+            placeholder="Email"
+            onChangeText={value => this.setState({email : value})}
+            label="Email"
+          />
+          <Input
+            placeholder="Password"
+            label="Password"
+            secureTextEntry={true}
+            onChangeText={value => this.setState({password : value})}
+          />
+          
+           <Button
+              onPress={() => this.loginUser(this.state.email, this.state.password)}
+              success color="#fff" rounded style={styles.btn}>
+             <Text style={{color: 'white'}}>Login</Text>
+           </Button>
+           <Button
+              onPress={() => this.signUpUser(this.state.email, this.state.password)}
+              primary color="#fff" rounded style={styles.btn}>
+             <Text style={{color: 'white'}}>Sign Up</Text>
+           </Button>
+           <Button
+              onPress={() => this.signOutUser()}
+              danger color="#fff" rounded style={styles.btn}>
+             <Text style={{color: 'white'}}>Sign Out</Text>
+           </Button>
+          
+        </View>
+      
     );
   }
 
@@ -73,6 +111,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 20
   },
+  btn: {
+    margin: 10,
+    flex: 1
+  }
 });
 
 export default App;
